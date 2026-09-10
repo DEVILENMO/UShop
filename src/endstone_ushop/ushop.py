@@ -101,8 +101,31 @@ class ushop(Plugin):
         )
 
         self.register_events(self)
+        self._register_arc_main_menu_button()
 
         self.logger.info(f'{ColorFormat.YELLOW}UShop is enabled...')
+
+    def _register_arc_main_menu_button(self) -> None:
+        core = getattr(self, "economy_plugin", None)
+        if core is None or not hasattr(core, "api_register_main_menu_button"):
+            return
+        try:
+            core.api_register_main_menu_button(
+                "ushop:main",
+                "在线商店",
+                on_click=lambda p: p.perform_command("us"),
+                priority=6,
+            )
+        except Exception as e:
+            print(f"[UShop]Failed to register ARC main menu button: {e}")
+
+    def on_disable(self) -> None:
+        try:
+            core = self.server.plugin_manager.get_plugin("arc_core")
+            if core is not None and hasattr(core, "api_unregister_main_menu_button"):
+                core.api_unregister_main_menu_button("ushop:main")
+        except Exception:
+            pass
 
     commands = {
         'us': {
